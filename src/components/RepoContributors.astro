@@ -37,11 +37,11 @@ try {
   // have, so treat "no rows at all" as an error rather than as a real answer.
   if (all.length === 0) {
     loadError =
-      "Could not load contributors from GitHub during the last build. Ask us for the current list.";
+      "We couldn't load contributors from GitHub during the last build. Ask us for the current list.";
   }
 } catch {
   loadError =
-    "Could not load contributors from GitHub during the last build. Ask us for the current list.";
+    "We couldn't load contributors from GitHub during the last build. Ask us for the current list.";
 }
 ---
 

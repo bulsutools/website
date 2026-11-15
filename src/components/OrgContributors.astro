@@ -13,7 +13,7 @@ let loadError: string | null = null;
 try {
   contributors = await fetchOrgTopContributors(TOP_CONTRIBUTOR_COUNT);
 } catch {
-  loadError = "Could not load contributors from GitHub during the last build.";
+  loadError = "We couldn't load contributors from GitHub during the last build.";
 }
 ---
 
@@ -23,8 +23,8 @@ try {
       <div>
         <h2 id="contributors-heading" class="section-title">Top contributors</h2>
         <p class="section-subtitle">
-          Commits across public uplbtools repositories on GitHub. Bots are
-          filtered out.
+          These are commits across public uplbtools repositories on GitHub, with
+          bots filtered out.
         </p>
       </div>
       <div class="contributors-actions">
@@ -49,7 +49,7 @@ try {
         </p>
       ) : contributors.length === 0 ? (
         <p class="contributors-status" role="status">
-          No public contributors found yet. Check back after the next deploy.
+          We haven't found any public contributors yet. Check back after the next deploy.
         </p>
       ) : (
         <ul class="contributors-grid">
@@ -89,7 +89,7 @@ try {
       )
     }
     <p class="contributors-press">
-      Writing about us? <a href="/press">Press kit</a>: logos, screenshots, boilerplate, and credits.
+      Writing about us? The <a href="/press">press kit</a> has logos, screenshots, boilerplate and credits.
     </p>
   </div>
 </section>

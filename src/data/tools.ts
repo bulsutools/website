@@ -28,7 +28,7 @@ export const tools: ToolEntry[] = [
     id: "room-tba",
     name: "Room TBA",
     description:
-      "Search a room, a building nickname, or a course and see it on the campus map. Room schedules, a class planner, jeepney routes, and it keeps working when the signal drops.",
+      "Search a room, a building nickname or a course and see it on the campus map. It also has room schedules, a class planner and jeepney routes, and it keeps working when the signal drops.",
     href: "https://room-tba.uplb.tools",
     githubHref: "https://github.com/uplbtools/room-tba",
     actionLabel: "Open the map",
@@ -42,13 +42,13 @@ export const tools: ToolEntry[] = [
       { value: "58", label: "buildings mapped" },
       { value: "94,000+", label: "class sections" },
     ],
-    note: "Forked for UP Visayas, UP Baguio, and BulSU.",
+    note: "It's been forked for UP Visayas, UP Baguio and BulSU.",
   },
   {
     id: "uppetite",
     name: "UPPETITE",
     description:
-      "Food that fits your break. Pick where you are, your next class, and how long you have, and get only the food stops that fit the walk around Elbi.",
+      "Pick where you are, your next class and how long you have, and get only the food stops that fit the walk around Elbi.",
     href: "https://uppetite.uplb.tools",
     actionLabel: "Open app",
     status: "active",
@@ -62,7 +62,7 @@ export const tools: ToolEntry[] = [
     id: "kubo",
     name: "Kubo",
     description:
-      "Student housing near campus. Find a dorm you can trust, and dorm owners get tools to list rooms and manage availability.",
+      "Find a dorm you can trust near campus. Dorm owners get tools to list rooms and manage availability.",
     href: "https://www.facebook.com/findkubo/",
     actionLabel: "Visit Kubo",
     status: "active",
@@ -75,7 +75,7 @@ export const tools: ToolEntry[] = [
     id: "gradesim",
     name: "Elbi GradeSim",
     description:
-      "A browser extension that sits on top of the AMIS grades page and simulates your GWA against Latin honor targets.",
+      "This browser extension sits on top of the AMIS grades page and simulates your GWA against Latin honor targets.",
     href: "https://gradesim.uplbtools.me",
     githubHref: "https://github.com/uplbtools/gradesim",
     actionLabel: "Install extension",
@@ -89,7 +89,7 @@ export const tools: ToolEntry[] = [
     id: "gwa-calculator",
     name: "UP GWA Calculator",
     description:
-      "Track your grades per semester and check your Latin honors standing. Built for UP students.",
+      "Track your grades per semester and check your Latin honors standing. It's built for UP students.",
     href: "https://up-gwa.vercel.app",
     actionLabel: "Visit website",
     status: "active",
@@ -103,7 +103,7 @@ export const tools: ToolEntry[] = [
     id: "uplb-trail",
     name: "UPLB TRAIL",
     description:
-      "A quick search over hundreds of UPLB websites, offices, resources, and student organizations.",
+      "Search hundreds of UPLB websites, offices, resources and student organizations.",
     href: "https://uplb-trail.vercel.app",
     actionLabel: "Visit website",
     status: "active",
