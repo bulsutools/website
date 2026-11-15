@@ -1,10 +1,10 @@
 # uplb.tools
 
-Org landing site for [UPLB Tools](https://uplb.tools): Useful utilities for the UP Los Baños community.
+Org landing site for [UPLB Tools](https://uplb.tools), which makes useful utilities for the UP Los Baños community.
 
 ## Stack
 
-- Astro 6 (static)
+- Astro 7 (static)
 - Node ≥ 22.12
 - npm (`package-lock.json`)
 - Vercel for `uplbtools.me`
