@@ -47,14 +47,12 @@ type GithubRepo = {
   name: string;
   archived: boolean;
   fork: boolean;
-};
-
-type GithubApiContributor = {
-  login: string;
-  avatar_url: string;
-  html_url: string;
-  contributions: number;
-  type: string;
+  forked_at?: string | null;
+  default_branch?: string;
+  parent?: {
+    full_name?: string;
+    default_branch?: string;
+  } | null;
 };
 
 type GithubUserProfile = {
@@ -117,23 +115,43 @@ async function listOrgRepos(): Promise<string[]> {
     .map((repo) => repo.name);
 }
 
-async function listRepoContributors(
-  repo: string,
-): Promise<GithubApiContributor[]> {
-  const contributors: GithubApiContributor[] = [];
-  let page = 1;
+/** The org repo list endpoint omits `parent`; single-repo GET has it. */
+async function getRepoMeta(name: string): Promise<GithubRepo | null> {
+  return githubGet<GithubRepo>(
+    `https://api.github.com/repos/${GITHUB_ORG}/${name}`,
+  );
+}
 
-  while (page <= 5) {
-    const batch = await githubGet<GithubApiContributor[]>(
-      `https://api.github.com/repos/${GITHUB_ORG}/${repo}/contributors?per_page=100&page=${page}&anon=false`,
-    );
-    if (!batch?.length) break;
-    contributors.push(...batch);
-    if (batch.length < 100) break;
-    page += 1;
-  }
+type GithubCompareCommit = {
+  author: {
+    login?: string;
+    avatar_url?: string;
+    html_url?: string;
+  } | null;
+};
 
-  return contributors;
+type GithubCompare = {
+  commits?: GithubCompareCommit[];
+};
+
+async function listForkAheadCommits(repo: {
+  name: string;
+  defaultBranch: string;
+  parentFullName: string | null;
+  parentBranch: string | null;
+}): Promise<GithubCompareCommit[]> {
+  // These repos are forks, so the contributors endpoint counts the entire
+  // upstream history. The compare endpoint lists only commits the fork has
+  // that its upstream doesn't, which is the work bulsutools people did.
+  if (!repo.parentFullName) return [];
+  const base = repo.parentBranch ?? "main";
+  const head = `${GITHUB_ORG}:${repo.defaultBranch}`;
+  const compare = await githubGet<GithubCompare>(
+    `https://api.github.com/repos/${repo.parentFullName}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}`,
+  );
+  // ponytail: compare returns at most 250 commits; a fork that far ahead
+  // would undercount. Repos here are nowhere near that.
+  return compare?.commits ?? [];
 }
 
 async function loadDisplayName(login: string): Promise<string | null> {
@@ -153,24 +171,32 @@ export async function fetchOrgTopContributors(
     Pick<OrgContributor, "login" | "avatarUrl" | "profileUrl" | "contributions">
   >();
 
-  for (const repo of repos) {
-    const rows = await listRepoContributors(repo);
-    for (const row of rows) {
-      if (row.type !== "User" || !isVisibleGithubContributor(row.login)) {
-        continue;
-      }
+  for (const repoName of repos) {
+    const meta = await getRepoMeta(repoName);
+    if (!meta) continue;
+    const commits = await listForkAheadCommits({
+      name: meta.name,
+      defaultBranch: meta.default_branch ?? "main",
+      parentFullName: meta.parent?.full_name ?? null,
+      parentBranch: meta.parent?.default_branch ?? null,
+    });
+    for (const commit of commits) {
+      const login = commit.author?.login;
+      if (!login || !isVisibleGithubContributor(login)) continue;
 
-      const existing = totals.get(row.login);
+      const existing = totals.get(login);
       if (existing) {
-        existing.contributions += row.contributions;
+        existing.contributions += 1;
         continue;
       }
 
-      totals.set(row.login, {
-        login: row.login,
-        avatarUrl: row.avatar_url,
-        profileUrl: row.html_url,
-        contributions: row.contributions,
+      totals.set(login, {
+        login,
+        avatarUrl:
+          commit.author?.avatar_url ?? `https://github.com/${login}.png`,
+        profileUrl:
+          commit.author?.html_url ?? `https://github.com/${login}`,
+        contributions: 1,
       });
     }
   }
@@ -183,18 +209,36 @@ export async function fetchRepoTopContributors(
   repo: string,
   limit = 24,
 ): Promise<OrgContributor[]> {
-  const rows = await listRepoContributors(repo);
-  const people = rows
-    .filter(
-      (row) => row.type === "User" && isVisibleGithubContributor(row.login),
-    )
-    .map((row) => ({
-      login: row.login,
-      avatarUrl: row.avatar_url,
-      profileUrl: row.html_url,
-      contributions: row.contributions,
-    }));
-  return rankAndName(people, limit);
+  const meta = await getRepoMeta(repo);
+  if (!meta) return [];
+  const commits = await listForkAheadCommits({
+    name: meta.name,
+    defaultBranch: meta.default_branch ?? "main",
+    parentFullName: meta.parent?.full_name ?? null,
+    parentBranch: meta.parent?.default_branch ?? null,
+  });
+  const totals = new Map<
+    string,
+    Pick<OrgContributor, "login" | "avatarUrl" | "profileUrl" | "contributions">
+  >();
+  for (const commit of commits) {
+    const login = commit.author?.login;
+    if (!login || !isVisibleGithubContributor(login)) continue;
+    const existing = totals.get(login);
+    if (existing) {
+      existing.contributions += 1;
+      continue;
+    }
+    totals.set(login, {
+      login,
+      avatarUrl:
+        commit.author?.avatar_url ?? `https://github.com/${login}.png`,
+      profileUrl:
+        commit.author?.html_url ?? `https://github.com/${login}`,
+      contributions: 1,
+    });
+  }
+  return rankAndName([...totals.values()], limit);
 }
 
 /**
