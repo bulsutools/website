@@ -3,9 +3,6 @@
 
 from __future__ import annotations
 
-import colorsys
-import subprocess
-import tempfile
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -13,50 +10,34 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = Path(__file__).resolve().parents[1]
 FONTS = Path(__file__).resolve().parent / "fonts"
 ICON = ROOT / "public" / "icon.png"
-GITHUB_SVG = ROOT / "public" / "brand/github-light.svg"
-PHOTO = ROOT / "public" / "icon.png"
 OUT = ROOT / "public" / "og.png"
 
 W, H = 1200, 630
 PAD_X = 80
-PAD_BOTTOM = 64
-TEXT_MAX = 500
-ICON_SIZE = 68
-GH_ICON = 20
+PAD_BOTTOM = 72
+TEXT_MAX = 640
+ICON_SIZE = 72
+MARK_SIZE = 560
 
+MAROON_DEEP = (64, 26, 22)  # hsl(5, 53%, 26%)
 WHITE = (255, 255, 255)
 CREAM = (248, 236, 234)
-SHADOW_SOFT = (8, 4, 4, 110)
-SHADOW_HARD = (0, 0, 0, 200)
 
 
-def hsl_to_rgb(h: float, s: float, l: float) -> tuple[int, int, int]:
-    r, g, b = colorsys.hls_to_rgb(h / 360, l / 100, s / 100)
-    return round(r * 255), round(g * 255), round(b * 255)
+def load_icon(size: int) -> Image.Image:
+    icon = Image.open(ICON).convert("RGBA")
+    return icon.resize((size, size), Image.Resampling.LANCZOS)
 
 
-def paste_cover(base: Image.Image, overlay: Image.Image) -> None:
-    ow, oh = overlay.size
-    scale = max(W / ow, H / oh)
-    resized = overlay.resize((round(ow * scale), round(oh * scale)), Image.Resampling.LANCZOS)
-    left = (resized.width - W) // 2
-    top = (resized.height - H) // 2
-    base.paste(resized.crop((left, top, left + W, top + H)))
-
-
-def draw_overlay(img: Image.Image) -> None:
-    """Bottom + left wash so type stays legible when scaled down."""
-    layer = Image.new("RGBA", (W, H))
-    px = layer.load()
-    for y in range(H):
-        for x in range(W):
-            bottom = max(0.0, (y - H * 0.24) / (H * 0.76)) ** 1.02
-            left = max(0.0, 1.0 - x / (W * 0.68)) ** 0.9
-            strength = min(1.0, bottom * 0.72 + left * 0.42)
-            alpha = int(55 + 205 * strength)
-            alpha = min(alpha, 245)
-            px[x, y] = (*hsl_to_rgb(5, 50, 12), alpha)
-    img.paste(layer, (0, 0), layer)
+def draw_faded_mark(canvas: Image.Image) -> None:
+    mark = load_icon(MARK_SIZE)
+    # White silhouette from the logo's alpha channel.
+    alpha = mark.split()[-1]
+    silhouette = Image.new("RGBA", mark.size, WHITE + (90,))
+    silhouette.putalpha(alpha)
+    x = W - MARK_SIZE // 2 - 60
+    y = (H - MARK_SIZE) // 2 + 30
+    canvas.paste(silhouette, (x, y), silhouette)
 
 
 def measure(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont) -> tuple[int, int]:
@@ -64,112 +45,54 @@ def measure(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont) 
     return box[2] - box[0], box[3] - box[1]
 
 
-def load_github_icon(size: int) -> Image.Image:
-    with tempfile.NamedTemporaryFile(suffix=".png") as tmp:
-        subprocess.run(
-            ["rsvg-convert", "-w", str(size), "-h", str(size), str(GITHUB_SVG), "-o", tmp.name],
-            check=True,
-        )
-        return Image.open(tmp.name).convert("RGBA")
-
-
-def draw_shadow_text(
-    draw: ImageDraw.ImageDraw,
-    xy: tuple[int, int],
-    text: str,
-    font: ImageFont.FreeTypeFont,
-    fill: tuple[int, ...],
-) -> None:
-    x, y = xy
-    draw.text((x + 2, y + 3), text, fill=SHADOW_SOFT, font=font)
-    draw.text((x + 1, y + 2), text, fill=SHADOW_HARD, font=font)
-    draw.text((x, y), text, fill=fill, font=font)
-
-
-def draw_wordmark(
-    draw: ImageDraw.ImageDraw,
-    x: int,
-    y: int,
-    brand_font: ImageFont.FreeTypeFont,
-) -> int:
-    draw_shadow_text(draw, (x, y), "bulsu", brand_font, WHITE)
-    bulsu_w, brand_h = measure(draw, "bulsu", brand_font)
-    dot_x = x + bulsu_w
-    draw_shadow_text(draw, (dot_x, y), ".", brand_font, CREAM)
-    dot_w, _ = measure(draw, ".", brand_font)
-    draw_shadow_text(draw, (dot_x + dot_w, y), "tools", brand_font, WHITE)
-    tools_w, _ = measure(draw, "tools", brand_font)
-    return bulsu_w + dot_w + tools_w, brand_h
-
-
-def draw_sub_line(
-    draw: ImageDraw.ImageDraw,
-    x: int,
-    y: int,
-    left: str,
-    right: str,
-    regular: ImageFont.FreeTypeFont,
-    emphasis: ImageFont.FreeTypeFont,
-) -> None:
-    draw_shadow_text(draw, (x, y), left, emphasis, WHITE)
-    left_w, _ = measure(draw, left, emphasis)
-    mid = "  ·  "
-    draw_shadow_text(draw, (x + left_w, y), mid, regular, (255, 255, 255, 185))
-    mid_w, _ = measure(draw, mid, regular)
-    draw_shadow_text(draw, (x + left_w + mid_w, y), right, emphasis, WHITE)
-
-
 def main() -> None:
-    base = Image.new("RGB", (W, H), hsl_to_rgb(5, 45, 16))
-    paste_cover(base, Image.open(PHOTO).convert("RGB"))
-    canvas = base.convert("RGBA")
-    draw_overlay(canvas)
+    canvas = Image.new("RGBA", (W, H), MAROON_DEEP + (255,))
+    draw_faded_mark(canvas)
     draw = ImageDraw.Draw(canvas)
 
-    brand = ImageFont.truetype(FONTS / "Inter-SemiBold.ttf", 42)
-    title_lead = ImageFont.truetype(FONTS / "Inter-Medium.ttf", 33)
-    title = ImageFont.truetype(FONTS / "Raleway-Bold.ttf", 70)
-    sub_emphasis = ImageFont.truetype(FONTS / "Inter-SemiBold.ttf", 27)
-    sub_regular = ImageFont.truetype(FONTS / "Inter-Regular.ttf", 27)
-    meta = ImageFont.truetype(FONTS / "Inter-Medium.ttf", 21)
+    brand = ImageFont.truetype(FONTS / "Raleway-Bold.ttf", 46)
+    title = ImageFont.truetype(FONTS / "Raleway-Bold.ttf", 68)
+    sub = ImageFont.truetype(FONTS / "Inter-SemiBold.ttf", 28)
+    meta = ImageFont.truetype(FONTS / "Inter-Medium.ttf", 22)
 
     text_x = PAD_X
-    gap_sm = 14
-    gap_md = 22
-    gap_lg = 28
+    gap_lg = 30
+    gap_md = 20
+    gap_sm = 12
 
-    meta_text = "Open source on GitHub"
+    meta_text = "bulsu.tools"
     _, meta_h = measure(draw, meta_text, meta)
-    _, sub_h = measure(draw, "Geary", sub_emphasis)
-    _, title_h = measure(draw, "BulSU students", title)
-    _, lead_h = measure(draw, "Campus tools for", title_lead)
+    _, sub_h = measure(draw, "Geary", sub)
+    _, line1_h = measure(draw, "Free, open-source", title)
+    _, line2_h = measure(draw, "tools for BulSU students", title)
+    title_h = line1_h + line2_h
     _, brand_h = measure(draw, "bulsu.tools", brand)
-
     row_h = max(ICON_SIZE, brand_h)
-    block_h = row_h + gap_lg + lead_h + gap_sm + title_h + gap_md + sub_h + gap_lg + meta_h
-    block_top = H - PAD_BOTTOM - block_h
 
-    icon_y = block_top + (row_h - ICON_SIZE) // 2
-    brand_y = block_top + (row_h - brand_h) // 2
-    wordmark_x = text_x + ICON_SIZE + 16
+    block_h = row_h + gap_lg + title_h + gap_md + sub_h + gap_lg + meta_h
+    y = H - PAD_BOTTOM - block_h
 
-    icon = Image.open(ICON).convert("RGBA")
-    icon = icon.resize((ICON_SIZE, ICON_SIZE), Image.Resampling.LANCZOS)
-    canvas.paste(icon, (text_x, icon_y), icon)
-    draw_wordmark(draw, wordmark_x, brand_y, brand)
+    icon = load_icon(ICON_SIZE)
+    canvas.paste(icon, (text_x, y + (row_h - ICON_SIZE) // 2), icon)
 
-    y = block_top + row_h + gap_lg
-    draw_shadow_text(draw, (text_x, y), "Tools for", title_lead, (255, 255, 255, 220))
-    y += lead_h + gap_sm
-    draw_shadow_text(draw, (text_x, y), "BulSU students", title, WHITE)
-    y += title_h + gap_md
-    draw_sub_line(draw, text_x, y, "Geary", "GWA Calculator · Room TBA", sub_regular, sub_emphasis)
+    word_x = text_x + ICON_SIZE + 18
+    draw.text((word_x, y + (row_h - brand_h) // 2), "bulsu.tools", fill=WHITE, font=brand)
+    word_w, _ = measure(draw, "bulsu.tools", brand)
+
+    y += row_h + gap_lg
+    draw.text((text_x, y), "Free, open-source", fill=WHITE, font=title)
+    y += line1_h
+    draw.text((text_x, y), "tools for BulSU students", fill=WHITE, font=title)
+    y += line2_h + gap_md
+
+    tools_text = "Geary  ·  GWA Calculator  ·  Room TBA"
+    draw.text((text_x, y), tools_text, fill=CREAM, font=sub)
     y += sub_h + gap_lg
 
-    draw_shadow_text(draw, (text_x, y), meta_text, meta, (255, 255, 255, 215))
+    draw.text((text_x, y), meta_text, fill=(255, 255, 255, 200), font=meta)
 
-    _, title2_w = measure(draw, "BulSU students", title)
-    assert title2_w <= TEXT_MAX
+    _, title_w = measure(draw, "tools for BulSU students", title)
+    assert max(title_w, word_x + word_w - text_x) <= TEXT_MAX + PAD_X
 
     canvas.convert("RGB").save(OUT, optimize=True)
     print(f"Wrote {OUT} ({W}x{H})")
