@@ -52,6 +52,7 @@ type GithubRepo = {
   parent?: {
     full_name?: string;
     default_branch?: string;
+    owner?: { login?: string; type?: string } | null;
   } | null;
 };
 
@@ -122,6 +123,33 @@ async function getRepoMeta(name: string): Promise<GithubRepo | null> {
   );
 }
 
+async function listRepoContributors(
+  repoFullName: string,
+): Promise<GithubApiContributor[]> {
+  const contributors: GithubApiContributor[] = [];
+  let page = 1;
+
+  while (page <= 5) {
+    const batch = await githubGet<GithubApiContributor[]>(
+      `https://api.github.com/repos/${repoFullName}/contributors?per_page=100&page=${page}&anon=false`,
+    );
+    if (!batch?.length) break;
+    contributors.push(...batch);
+    if (batch.length < 100) break;
+    page += 1;
+  }
+
+  return contributors;
+}
+
+type GithubApiContributor = {
+  login: string;
+  avatar_url: string;
+  html_url: string;
+  contributions: number;
+  type: string;
+};
+
 type GithubCompareCommit = {
   author: {
     login?: string;
@@ -171,9 +199,24 @@ export async function fetchOrgTopContributors(
     Pick<OrgContributor, "login" | "avatarUrl" | "profileUrl" | "contributions">
   >();
 
+  const add = (
+    login: string,
+    contributions: number,
+    avatarUrl: string,
+    profileUrl: string,
+  ) => {
+    const existing = totals.get(login);
+    if (existing) {
+      existing.contributions += contributions;
+      return;
+    }
+    totals.set(login, { login, avatarUrl, profileUrl, contributions });
+  };
+
   for (const repoName of repos) {
     const meta = await getRepoMeta(repoName);
     if (!meta) continue;
+
     const commits = await listForkAheadCommits({
       name: meta.name,
       defaultBranch: meta.default_branch ?? "main",
@@ -183,21 +226,27 @@ export async function fetchOrgTopContributors(
     for (const commit of commits) {
       const login = commit.author?.login;
       if (!login || !isVisibleGithubContributor(login)) continue;
-
-      const existing = totals.get(login);
-      if (existing) {
-        existing.contributions += 1;
-        continue;
-      }
-
-      totals.set(login, {
+      add(
         login,
-        avatarUrl:
-          commit.author?.avatar_url ?? `https://github.com/${login}.png`,
-        profileUrl:
-          commit.author?.html_url ?? `https://github.com/${login}`,
-        contributions: 1,
-      });
+        1,
+        commit.author?.avatar_url ?? `https://github.com/${login}.png`,
+        commit.author?.html_url ?? `https://github.com/${login}`,
+      );
+    }
+
+    // When the "upstream" is a person's own repo (geary <- shnflrsc/geary,
+    // gwa-calculator <- ReyMiguel/gwa-calculator) it is part of the project,
+    // not foreign history. Count its contributors too. Org-owned parents
+    // (uplbtools/room-tba) stay excluded.
+    const parent = meta.parent;
+    if (parent?.full_name && parent.owner?.type === "User") {
+      const rows = await listRepoContributors(parent.full_name);
+      for (const row of rows) {
+        if (row.type !== "User" || !isVisibleGithubContributor(row.login)) {
+          continue;
+        }
+        add(row.login, row.contributions, row.avatar_url, row.html_url);
+      }
     }
   }
 
