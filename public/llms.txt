@@ -1,0 +1,20 @@
+# bulsu.tools
+
+> Org landing site for bulsutools (https://github.com/bulsutools), a group of Bulacan State University students who build free, open-source tools for campus life. Not an official BulSU site. All tools are MIT licensed and run without accounts or tracking.
+
+## Tools
+
+- [Geary](https://geary.bulsu.tools): the student-managed handbook for BulSU. Guides on enrollment, academics, documents, and campus life. Source: https://github.com/bulsutools/geary
+- [GWA Calculator](https://gwa-calculator.bulsu.tools): general weighted average and honors estimator. Runs entirely in the browser; grades are never uploaded. Source: https://github.com/bulsutools/gwa-calculator
+- [Room TBA](https://room-tba.bulsu.tools): interactive map of the BulSU Malolos campuses (Campus 1 and Campus 2) with building search and room lookup. Forked from uplbtools/room-tba. Source: https://github.com/bulsutools/room-tba
+
+## Site
+
+- [About](https://bulsu.tools/about): what bulsutools is and how the tools are built
+- [People](https://bulsu.tools/people): top contributors across bulsutools GitHub repositories
+- [Privacy](https://bulsu.tools/privacy)
+- [Terms](https://bulsu.tools/terms)
+
+## Optional
+
+- [GitHub organization](https://github.com/bulsutools)
