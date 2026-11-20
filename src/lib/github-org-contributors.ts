@@ -26,6 +26,7 @@ const HIDDEN_LOGINS = new Set([
   "devin-ai-integration[bot]",
   "sweep-ai[bot]",
   "allcontributors[bot]",
+  "astrobot-houston",
 ]);
 
 const HIDDEN_LOGIN_PATTERNS = [
