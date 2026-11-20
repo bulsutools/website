@@ -1,0 +1,22 @@
+name: Setup bulsu.tools DNS for Pages
+on:
+  workflow_dispatch:
+jobs:
+  dns:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create CNAME records
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ZONE_ID: af12ceed1bc9a5b7eff6fdecf98a3187
+        run: |
+          for name in bulsu.tools www.bulsu.tools; do
+            code=$(curl -s -o /tmp/dns.json -w "%{http_code}" -X POST \
+              "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" \
+              -H "Authorization: Bearer $CF_API_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"type\":\"CNAME\",\"name\":\"$name\",\"content\":\"bulsu-tools-7jl.pages.dev\",\"proxied\":true}")
+            echo "$name -> HTTP $code"
+            cat /tmp/dns.json
+            echo
+          done

@@ -18,13 +18,13 @@ This file covers the **org landing site** for [bulsutools](https://github.com/bu
 - **Framework:** Astro (static org landing)
 - **Node:** ≥ 22.12
 - **Package manager:** npm (`package-lock.json`)
-- **Deploy:** Vercel
+- **Deploy:** Cloudflare Pages (`bulsu-tools` project)
 
 ## Branches and deploy
 
-- **Default branch:** `main` → Vercel production on merge
-- Feature work: branch → PR to `main`
-- No `staging` branch: use Vercel preview on the PR
+- **Default branch:** `main` → Pages production via `.github/workflows/deploy-cloudflare.yml`
+- Feature work: branch → PR to `main` (Pages preview on branch `pr-<n>`)
+- Pages account: `karunungan` (`ee40d544c91d2b9f1bd9e0f7b2b304b8`); zone `bulsu.tools` lives there too
 
 ## Verify before done
 

@@ -7,7 +7,7 @@ Org landing site for [bulsutools](https://github.com/bulsutools), which makes fr
 - Astro 7 (static)
 - Node ≥ 22.12
 - npm (`package-lock.json`)
-- Vercel
+- Cloudflare Pages (`bulsu-tools` project, `karunungan` account)
 
 ## Develop
 
@@ -25,7 +25,10 @@ npm run dev
 
 ## Deploy
 
-- Default branch: `main` → Vercel production
+- GitHub Actions (`.github/workflows/deploy-cloudflare.yml`) builds and runs `wrangler pages deploy` on every push to `main` (production) and PR (preview branch `pr-<n>`)
+- Required repo secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` (`ee40d544c91d2b9f1bd9e0f7b2b304b8`)
+- Custom domains: `bulsu.tools`, `www.bulsu.tools`; fallback `bulsu-tools-7jl.pages.dev`
+- Manual deploy: `CLOUDFLARE_ACCOUNT_ID=ee40d544c91d2b9f1bd9e0f7b2b304b8 wrangler pages deploy dist --project-name=bulsu-tools --branch=main`
 - Feature work: branch → PR to `main`
 
 ## Tools listed
