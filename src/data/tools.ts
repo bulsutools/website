@@ -25,92 +25,47 @@ export type ToolEntry = {
 
 export const tools: ToolEntry[] = [
   {
+    id: "geary",
+    name: "Geary",
+    description:
+      "The student-managed handbook for BulSU. Guides on enrollment, academics, documents, scholarships and campus organizations, each citing its official source.",
+    href: "https://geary.bulsu.tools",
+    githubHref: "https://github.com/bulsutools/geary",
+    actionLabel: "Open Geary",
+    status: "active",
+    statusLabel: "Active",
+    tags: ["Guide", "Open source"],
+    screenshot: "/geary-screenshot.png",
+    screenshotAlt: "Geary handbook homepage with student guides for BulSU",
+  },
+  {
+    id: "gwa-calculator",
+    name: "GWA Calculator",
+    description:
+      "Compute your General Weighted Average and estimate eligibility for the Gold Gear Awards and Latin Honors. Runs entirely in the browser; grades are never uploaded.",
+    href: "https://gwa-calculator.bulsu.tools",
+    githubHref: "https://github.com/bulsutools/gwa-calculator",
+    actionLabel: "Open calculator",
+    status: "active",
+    statusLabel: "Active",
+    tags: ["Academics", "Open source"],
+    screenshot: "/gwa-calculator-screenshot.png",
+    screenshotAlt:
+      "GWA Calculator grade entry form with computed average and honors estimate",
+  },
+  {
     id: "room-tba",
     name: "Room TBA",
     description:
-      "Search a room, a building nickname or a course and see it on the campus map. It also has room schedules, a class planner and jeepney routes, and it keeps working when the signal drops.",
-    href: "https://room-tba.uplb.tools",
-    githubHref: "https://github.com/uplbtools/room-tba",
+      "Find a building, college or room on the BulSU Malolos Campus 1 + Campus 2 map. Forked from the UPLB campus map.",
+    href: "https://room-tba.bulsu.tools",
+    githubHref: "https://github.com/bulsutools/room-tba",
     actionLabel: "Open the map",
     status: "active",
     statusLabel: "Active",
     tags: ["Map", "Open source"],
     screenshot: "/room-tba-screenshot.png",
-    screenshotAlt: "Room TBA campus map with room search and building pins",
-    stats: [
-      { value: "50,000+", label: "monthly page views" },
-      { value: "58", label: "buildings mapped" },
-      { value: "94,000+", label: "class sections" },
-    ],
-    note: "It's been forked for UP Visayas, UP Baguio and BulSU.",
-  },
-  {
-    id: "uppetite",
-    name: "UPPETITE",
-    description:
-      "Pick where you are, your next class and how long you have, and get only the food stops that fit the walk around Elbi.",
-    href: "https://uppetite.uplb.tools",
-    actionLabel: "Open app",
-    status: "active",
-    statusLabel: "Active",
-    tags: ["Food"],
-    screenshot: "/uppetite-screenshot.png",
     screenshotAlt:
-      "UPPETITE break planner choosing a building, next class, and break time to find food stops",
-  },
-  {
-    id: "kubo",
-    name: "Kubo",
-    description:
-      "Find a dorm you can trust near campus. Dorm owners get tools to list rooms and manage availability.",
-    href: "https://www.facebook.com/findkubo/",
-    actionLabel: "Visit Kubo",
-    status: "active",
-    statusLabel: "Community partner",
-    tags: ["Housing"],
-    screenshot: "/kubo-screenshot.png",
-    screenshotAlt: "Kubo student housing map showing dorm listings around UPLB",
-  },
-  {
-    id: "gradesim",
-    name: "Elbi GradeSim",
-    description:
-      "This browser extension sits on top of the AMIS grades page and simulates your GWA against Latin honor targets.",
-    href: "https://gradesim.uplbtools.me",
-    githubHref: "https://github.com/uplbtools/gradesim",
-    actionLabel: "Install extension",
-    status: "active",
-    statusLabel: "Active",
-    tags: ["Extension", "Open source"],
-    screenshot: "/gradesim-screenshot.png",
-    screenshotAlt: "Elbi GradeSim AMIS extension",
-  },
-  {
-    id: "gwa-calculator",
-    name: "UP GWA Calculator",
-    description:
-      "Track your grades per semester and check your Latin honors standing. It's built for UP students.",
-    href: "https://up-gwa.vercel.app",
-    actionLabel: "Visit website",
-    status: "active",
-    statusLabel: "Active",
-    tags: ["Academics"],
-    screenshot: "/gwa-calculator-screenshot.png",
-    screenshotAlt:
-      "UP GWA Calculator grade tracking dashboard showing subjects, GWA, and Latin honors status",
-  },
-  {
-    id: "uplb-trail",
-    name: "UPLB TRAIL",
-    description:
-      "Search hundreds of UPLB websites, offices, resources and student organizations.",
-    href: "https://uplb-trail.vercel.app",
-    actionLabel: "Visit website",
-    status: "active",
-    statusLabel: "Active",
-    tags: ["Directory"],
-    screenshot: "/trail-screenshot.png",
-    screenshotAlt:
-      "UPLB TRAIL search engine page showing category tags and directory search results",
+      "Room TBA map of the BulSU Malolos campuses with building search",
   },
 ];

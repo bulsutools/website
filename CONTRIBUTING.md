@@ -1,18 +1,18 @@
-# Contributing to uplbtools.me
+# Contributing to bulsu.tools
 
-Thanks for helping maintain the hub for UPLB student open-source tools.
+Thanks for helping maintain the hub for BulSU student open-source tools.
 
 ## Report issues
 
-Open a [GitHub issue](https://github.com/uplbtools/uplbtools.me/issues) for broken links, missing projects, or copy corrections. No PR required for simple listing updates if you prefer: a maintainer can apply them.
+Open a [GitHub issue](https://github.com/bulsutools/website/issues) for broken links, missing projects, or copy corrections. No PR required for simple listing updates if you prefer: a maintainer can apply them.
 
 ## Developers
 
 ### Setup
 
 ```sh
-bun install   # or npm install
-bun dev       # http://localhost:4321
+npm install
+npm run dev       # http://localhost:4321
 ```
 
 ### Pull requests
@@ -26,4 +26,4 @@ bun dev       # http://localhost:4321
 
 See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
-Community: [Discord](https://discord.uplbtools.me) · [UPLB Tools](https://uplbtools.me)
+Community: [bulsutools on GitHub](https://github.com/bulsutools)

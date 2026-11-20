@@ -1,24 +1,26 @@
 {
-  "headers": [
-    {
-      "source": "/sw.js",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
-        { "key": "Content-Type", "value": "application/javascript; charset=utf-8" }
-      ]
-    }
-  ],
+  "headers": [],
   "redirects": [
     {
       "source": "/:path*",
-      "has": [{ "type": "host", "value": "uplbtools.me" }],
-      "destination": "https://www.uplb.tools/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "bulsutools.me"
+        }
+      ],
+      "destination": "https://www.bulsu.tools/:path*",
       "permanent": true
     },
     {
       "source": "/:path*",
-      "has": [{ "type": "host", "value": "www.uplbtools.me" }],
-      "destination": "https://www.uplb.tools/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.bulsutools.me"
+        }
+      ],
+      "destination": "https://www.bulsu.tools/:path*",
       "permanent": true
     }
   ]

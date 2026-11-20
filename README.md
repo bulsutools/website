@@ -1,14 +1,13 @@
-# uplb.tools
+# bulsu.tools
 
-Org landing site for [UPLB Tools](https://uplb.tools), which makes useful utilities for the UP Los Baños community.
+Org landing site for [bulsutools](https://github.com/bulsutools), which makes free utilities for the Bulacan State University community.
 
 ## Stack
 
 - Astro 7 (static)
 - Node ≥ 22.12
 - npm (`package-lock.json`)
-- Vercel for `uplbtools.me`
-- Cloudflare Workers in `workers/` for subdomain redirects (for example `messenger.uplbtools.me`)
+- Vercel
 
 ## Develop
 
@@ -22,20 +21,18 @@ npm run dev
 | `npm run dev` | Local server |
 | `npm run build` | Production build to `./dist/` |
 | `npm run preview` | Preview the build |
-| `npm run generate:og` | Regenerate Open Graph images |
+| `npm run generate:og` | Regenerate the Open Graph image |
 
 ## Deploy
 
 - Default branch: `main` → Vercel production
 - Feature work: branch → PR to `main`
-- After editing `workers/*`, redeploy the Worker with Wrangler (see the worker README)
 
-## Related
+## Tools listed
 
-- [Room TBA](https://room-tba.uplbtools.me)
-- [GradeSim](https://gradesim.uplbtools.me) (extension landing)
-- Org agent defaults: [room-tba/AGENTS.md](https://github.com/uplbtools/room-tba/blob/main/AGENTS.md)
-- This repo: [AGENTS.md](AGENTS.md)
+- [Geary](https://geary.bulsu.tools) — student handbook
+- [GWA Calculator](https://gwa-calculator.bulsu.tools) — GWA and honors estimator
+- [Room TBA](https://room-tba.bulsu.tools) — Malolos campus map (fork of uplbtools/room-tba)
 
 ## License
 

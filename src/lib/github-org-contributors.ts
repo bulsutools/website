@@ -6,8 +6,13 @@ export type OrgContributor = {
   contributions: number;
 };
 
-const GITHUB_ORG = "uplbtools";
-const EXCLUDED_REPOS = new Set(["demo-repository"]);
+const GITHUB_ORG = "bulsutools";
+const EXCLUDED_REPOS = new Set([
+  "demo-repository",
+  "codespace",
+  "devcontainer",
+  "devcontainer-personal",
+]);
 const HIDDEN_LOGINS = new Set([
   "dependabot[bot]",
   "dependabot",
@@ -69,7 +74,7 @@ export function formatGithubContributions(count: number): string {
 function githubHeaders(): HeadersInit {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
-    "User-Agent": "uplbtools.me",
+    "User-Agent": "bulsu.tools",
   };
   const token =
     typeof process !== "undefined" ? process.env.GITHUB_TOKEN : undefined;
@@ -99,9 +104,15 @@ async function listOrgRepos(): Promise<string[]> {
     page += 1;
   }
 
+  // The bulsutools products are themselves forks (of uplbtools and other
+  // upstreams), so `fork` can't be used as an exclusion here. Pre-fork
+  // snapshots and devcontainer templates are excluded by name instead.
   return repos
     .filter(
-      (repo) => !repo.archived && !repo.fork && !EXCLUDED_REPOS.has(repo.name),
+      (repo) =>
+        !repo.archived &&
+        !repo.name.endsWith("-pre-fork") &&
+        !EXCLUDED_REPOS.has(repo.name),
     )
     .map((repo) => repo.name);
 }

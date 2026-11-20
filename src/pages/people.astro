@@ -2,15 +2,25 @@
 import Layout from "../layouts/Layout.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import TeamCard from "../components/TeamCard.astro";
-import RepoContributors from "../components/RepoContributors.astro";
-import NamedContributors from "../components/NamedContributors.astro";
-import { coreTeam, designCredits, toolBuilders } from "../data/press";
+import OpensInNewTab from "../components/OpensInNewTab.astro";
+import {
+  fetchOrgTopContributors,
+  formatGithubContributions,
+} from "../lib/github-org-contributors";
+
+let contributors: Awaited<ReturnType<typeof fetchOrgTopContributors>> = [];
+let loadError: string | null = null;
+
+try {
+  contributors = await fetchOrgTopContributors(24);
+} catch {
+  loadError = "We couldn't load contributors from GitHub during the last build.";
+}
 ---
 
 <Layout
   title="People"
-  description="These are the students who build Room TBA, Elbi GradeSim and the rest of uplb.tools, plus everyone who's contributed on GitHub."
+  description="These are the students who build Geary, the GWA Calculator, Room TBA and the rest of bulsu.tools."
 >
   <Header />
   <main id="main-content" class="people-main">
@@ -20,81 +30,47 @@ import { coreTeam, designCredits, toolBuilders } from "../data/press";
       <header class="people-hero">
         <h1>The team</h1>
         <p class="people-lede">
-          uplb.tools is built by UPLB students in their spare time. Everyone on
-          this page shipped something that people use.
+          bulsu.tools is built by BulSU students in their spare time. Everyone
+          on this page shipped something that people use.
         </p>
       </header>
 
-      <section class="people-section" aria-labelledby="core-heading">
-        <h2 id="core-heading">Core team</h2>
-        <ul class="team-grid">
-          {coreTeam.map((member) => <TeamCard member={member} />)}
-        </ul>
-      </section>
-
-      {
-        toolBuilders.map((person) => (
-          <section class="people-section" aria-labelledby={`tool-${person.tool.toLowerCase()}-heading`}>
-            <h2 id={`tool-${person.tool.toLowerCase()}-heading`}>{person.tool}</h2>
-            <ul class="team-grid">
-              <TeamCard member={person} />
-            </ul>
-          </section>
-        ))
-      }
-
-      <section class="people-section" aria-labelledby="design-heading">
-        <h2 id="design-heading">Design</h2>
-        <ul class="team-grid">
-          {designCredits.map((person) => <TeamCard member={person} />)}
-        </ul>
-      </section>
-
       <section class="people-section" aria-labelledby="contributors-heading">
         <h2 id="contributors-heading">Contributors</h2>
-        <NamedContributors />
-        <h3 class="people-subhead">On GitHub</h3>
+        {
+          loadError ? (
+            <p class="people-note" role="alert">{loadError}</p>
+          ) : contributors.length === 0 ? (
+            <p class="people-note" role="status">
+              We haven't found any public contributors yet. Check back after the
+              next deploy.
+            </p>
+          ) : (
+            <ul class="contributor-list">
+              {contributors.map((person) => {
+                const displayName = person.name ?? person.login;
+                const commits = formatGithubContributions(person.contributions);
+                return (
+                  <li>
+                    <a
+                      class="contributor-list__name"
+                      href={person.profileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {displayName}
+                      <OpensInNewTab />
+                    </a>
+                    <span class="contributor-list__count">{commits}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          )
+        }
         <p class="people-note">
-          This list shows everyone who's landed a commit on Room TBA, straight from GitHub.
-        </p>
-        <RepoContributors />
-      </section>
-
-      <section class="people-section" aria-labelledby="policy-heading">
-        <h2 id="policy-heading">How this page works</h2>
-        <p>
-          Nobody on this page is ranked. Each list below has its own rule for who
-          gets added, and the rules are written here so they can't change from
-          one feature to the next.
-        </p>
-        <ul class="policy-list">
-          <li>
-            Anyone with a merged commit on Room TBA is listed under On GitHub. That
-            list comes straight from GitHub and nobody maintains it by hand.
-          </li>
-          <li>
-            Anyone who made something for a uplb.tools project that isn't code is
-            listed under Contributors. That covers pubs, posters, building data,
-            room directions, testing and translations, and there's no minimum.
-            Whoever asked you to do the work adds your name when it's done.
-          </li>
-          <li>
-            Anyone who built one of the other uplb.tools apps is listed under that
-            app. Anyone who has done design work across more than one release or
-            project is listed under Design.
-          </li>
-          <li>
-            The core team is the people who kept working across more than one
-            release, whether that work was code, design, data, publicity or
-            operations. The current core team reviews this list once a semester
-            and never in the same week as a press feature.
-          </li>
-        </ul>
-        <p>
-          Your card belongs to you. If you want the bio, the links, or the photo
-          changed, or the whole card removed, ask. We don't link to anyone's
-          profile without asking them first. The role under your name describes
-          what you work on and nothing more.
+          This list comes straight from GitHub: commits across the public
+          bulsutools repositories, bots filtered out.
         </p>
       </section>
 
@@ -102,13 +78,13 @@ import { coreTeam, designCredits, toolBuilders } from "../data/press";
         <h2 id="join-heading">Want your name here?</h2>
         <p>
           The good-first-issue queue is open and you don't need to be a strong
-          programmer to start. Data fixes, room directions and design feedback
-          all count.
+          programmer to start. Guide fixes, map data corrections and design
+          feedback all count.
         </p>
         <p class="people-links">
-          <a href="https://github.com/uplbtools/room-tba/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22">Good first issues</a>
-          <a href="https://discord.uplbtools.me">Discord</a>
-          <a href="/press">Press kit</a>
+          <a href="https://github.com/bulsutools">GitHub organization</a>
+          <a href="https://github.com/bulsutools/geary/issues">Geary issues</a>
+          <a href="https://github.com/bulsutools/room-tba/issues">Room TBA issues</a>
         </p>
       </section>
     </div>
@@ -159,31 +135,45 @@ import { coreTeam, designCredits, toolBuilders } from "../data/press";
     margin: 0 0 1rem;
   }
 
-  .people-subhead {
-    font-size: 0.95rem;
-    margin: 1.5rem 0 0.5rem;
-  }
-
-  .people-note {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin: 0 0 1.25rem;
-  }
-
   .people-section p {
     font-size: 0.9rem;
     margin: 0 0 0.75rem;
   }
 
-  .policy-list {
-    margin: 0.75rem 0 1rem;
-    padding-left: 1.25rem;
-    font-size: 0.9rem;
+  .people-note {
+    font-size: 0.85rem;
+    color: var(--text-muted);
   }
 
-  .policy-list li {
-    margin-bottom: 0.5rem;
-    line-height: 1.55;
+  .contributor-list {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  }
+
+  .contributor-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-card);
+  }
+
+  .contributor-list__name {
+    color: var(--brand-maroon);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 600;
+  }
+
+  .contributor-list__count {
+    color: var(--text-muted);
+    white-space: nowrap;
   }
 
   .people-links {

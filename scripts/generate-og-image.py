@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FONTS = Path(__file__).resolve().parent / "fonts"
 ICON = ROOT / "public" / "icon.png"
 GITHUB_SVG = ROOT / "public" / "brand/github-light.svg"
-PHOTO = ROOT / "public" / "uplb-bg.webp"
+PHOTO = ROOT / "public" / "icon.png"
 OUT = ROOT / "public" / "og.png"
 
 W, H = 1200, 630
@@ -92,14 +92,14 @@ def draw_wordmark(
     y: int,
     brand_font: ImageFont.FreeTypeFont,
 ) -> int:
-    draw_shadow_text(draw, (x, y), "uplb", brand_font, WHITE)
-    uplb_w, brand_h = measure(draw, "uplb", brand_font)
-    dot_x = x + uplb_w
+    draw_shadow_text(draw, (x, y), "bulsu", brand_font, WHITE)
+    bulsu_w, brand_h = measure(draw, "bulsu", brand_font)
+    dot_x = x + bulsu_w
     draw_shadow_text(draw, (dot_x, y), ".", brand_font, CREAM)
     dot_w, _ = measure(draw, ".", brand_font)
     draw_shadow_text(draw, (dot_x + dot_w, y), "tools", brand_font, WHITE)
     tools_w, _ = measure(draw, "tools", brand_font)
-    return uplb_w + dot_w + tools_w, brand_h
+    return bulsu_w + dot_w + tools_w, brand_h
 
 
 def draw_sub_line(
@@ -140,10 +140,10 @@ def main() -> None:
 
     meta_text = "Open source on GitHub"
     _, meta_h = measure(draw, meta_text, meta)
-    _, sub_h = measure(draw, "Room TBA", sub_emphasis)
-    _, title_h = measure(draw, "UP Los Baños", title)
+    _, sub_h = measure(draw, "Geary", sub_emphasis)
+    _, title_h = measure(draw, "BulSU students", title)
     _, lead_h = measure(draw, "Campus tools for", title_lead)
-    _, brand_h = measure(draw, "uplb.tools", brand)
+    _, brand_h = measure(draw, "bulsu.tools", brand)
 
     row_h = max(ICON_SIZE, brand_h)
     block_h = row_h + gap_lg + lead_h + gap_sm + title_h + gap_md + sub_h + gap_lg + meta_h
@@ -159,19 +159,16 @@ def main() -> None:
     draw_wordmark(draw, wordmark_x, brand_y, brand)
 
     y = block_top + row_h + gap_lg
-    draw_shadow_text(draw, (text_x, y), "Campus tools for", title_lead, (255, 255, 255, 220))
+    draw_shadow_text(draw, (text_x, y), "Tools for", title_lead, (255, 255, 255, 220))
     y += lead_h + gap_sm
-    draw_shadow_text(draw, (text_x, y), "UP Los Baños", title, WHITE)
+    draw_shadow_text(draw, (text_x, y), "BulSU students", title, WHITE)
     y += title_h + gap_md
-    draw_sub_line(draw, text_x, y, "Room TBA", "Elbi GradeSim", sub_regular, sub_emphasis)
+    draw_sub_line(draw, text_x, y, "Geary", "GWA Calculator · Room TBA", sub_regular, sub_emphasis)
     y += sub_h + gap_lg
 
-    gh = load_github_icon(GH_ICON)
-    gh_y = y + max(0, (meta_h - GH_ICON) // 2)
-    canvas.paste(gh, (text_x, gh_y), gh)
-    draw_shadow_text(draw, (text_x + GH_ICON + 8, y), meta_text, meta, (255, 255, 255, 215))
+    draw_shadow_text(draw, (text_x, y), meta_text, meta, (255, 255, 255, 215))
 
-    _, title2_w = measure(draw, "UP Los Baños", title)
+    _, title2_w = measure(draw, "BulSU students", title)
     assert title2_w <= TEXT_MAX
 
     canvas.convert("RGB").save(OUT, optimize=True)
