@@ -31,6 +31,11 @@ npm run dev
 - Manual deploy: `CLOUDFLARE_ACCOUNT_ID=ee40d544c91d2b9f1bd9e0f7b2b304b8 wrangler pages deploy dist --project-name=bulsu-tools --branch=main`
 - Feature work: branch → PR to `main`
 
+## Workers
+
+- `workers/messenger-redirect/` — legacy messenger redirect worker (uplbtools account)
+- `workers/activity-digest/` — serves `GET /api/digest` (last-24h org activity as JSON) and runs a daily cron that posts the digest to Discord. Powers the `/digest` page, which fetches the API at build time. See `workers/activity-digest/README.md` for secrets and deploy steps; `GITHUB_TOKEN` and `DISCORD_WEBHOOK_URL` are worker secrets, never committed.
+
 ## Tools listed
 
 - [Geary](https://geary.bulsu.tools) — student handbook

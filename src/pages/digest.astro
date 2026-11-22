@@ -1,0 +1,276 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import OpensInNewTab from "../components/OpensInNewTab.astro";
+import { SITE_ORIGIN } from "../lib/site-meta";
+
+type DigestCommit = {
+  message: string;
+  author: string;
+  date: string;
+  url: string;
+};
+type DigestPullRequest = {
+  number: number;
+  title: string;
+  url: string;
+  author: string | null;
+  state: string;
+  merged: boolean;
+  createdAt: string;
+};
+type DigestIssue = {
+  number: number;
+  title: string;
+  url: string;
+  author: string | null;
+  createdAt: string;
+};
+type DigestRelease = {
+  name: string | null;
+  tagName: string;
+  url: string;
+  createdAt: string;
+};
+type DigestRepo = {
+  name: string;
+  url: string;
+  commits: DigestCommit[];
+  pullRequests: DigestPullRequest[];
+  issues: DigestIssue[];
+  releases: DigestRelease[];
+};
+type Digest = {
+  generatedAt: string;
+  since: string;
+  repos: DigestRepo[];
+};
+
+const DIGEST_API =
+  import.meta.env.PUBLIC_DIGEST_API_URL ?? `${SITE_ORIGIN}/api/digest`;
+
+let digest: Digest | null = null;
+let loadError: string | null = null;
+
+try {
+  const res = await fetch(DIGEST_API);
+  if (res.ok) {
+    digest = (await res.json()) as Digest;
+  } else {
+    loadError = `Digest API returned ${res.status}.`;
+  }
+} catch {
+  loadError =
+    "We couldn't load the activity digest during the last build.";
+}
+
+const activeRepos =
+  digest?.repos.filter(
+    (repo) =>
+      repo.commits.length ||
+      repo.pullRequests.length ||
+      repo.issues.length ||
+      repo.releases.length,
+  ) ?? [];
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-PH", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+---
+
+<Layout
+  title="Activity digest"
+  description="The last 24 hours of commits, pull requests, issues and releases across the bulsutools GitHub org."
+>
+  <Header />
+  <main id="main-content" class="digest-main">
+    <div class="container digest-container">
+      <a href="/" class="digest-back">&larr; Home</a>
+
+      <header class="digest-hero">
+        <h1>Activity digest</h1>
+        <p class="digest-lede">
+          What shipped across bulsutools in the last 24 hours: commits,
+          pull requests, issues and releases.
+        </p>
+        {
+          digest && (
+            <p class="digest-generated">
+              Generated {formatDate(digest.generatedAt)}
+            </p>
+          )
+        }
+      </header>
+
+      {
+        loadError ? (
+          <p class="digest-note" role="alert">
+            {loadError} The digest worker may not be deployed yet.
+          </p>
+        ) : !digest || activeRepos.length === 0 ? (
+          <p class="digest-note" role="status">
+            No activity in the last 24 hours. Check back after the next
+            deploy.
+          </p>
+        ) : (
+          activeRepos.map((repo) => (
+            <section class="digest-repo" aria-label={repo.name}>
+              <h2>
+                <a href={repo.url} target="_blank" rel="noopener noreferrer">
+                  {repo.name}
+                  <OpensInNewTab />
+                </a>
+              </h2>
+              <ul class="digest-list">
+                {repo.releases.map((release) => (
+                  <li>
+                    <a href={release.url} target="_blank" rel="noopener noreferrer">
+                      {release.name ?? release.tagName}
+                      <OpensInNewTab />
+                    </a>
+                    <span class="digest-tag">release</span>
+                  </li>
+                ))}
+                {repo.pullRequests.map((pr) => (
+                  <li>
+                    <a href={pr.url} target="_blank" rel="noopener noreferrer">
+                      #{pr.number} {pr.title}
+                      <OpensInNewTab />
+                    </a>
+                    <span class="digest-tag">
+                      {pr.merged ? "PR merged" : pr.state === "OPEN" ? "PR open" : "PR"}
+                    </span>
+                  </li>
+                ))}
+                {repo.issues.map((issue) => (
+                  <li>
+                    <a href={issue.url} target="_blank" rel="noopener noreferrer">
+                      #{issue.number} {issue.title}
+                      <OpensInNewTab />
+                    </a>
+                    <span class="digest-tag">issue</span>
+                  </li>
+                ))}
+                {repo.commits.map((commit) => (
+                  <li>
+                    <a href={commit.url} target="_blank" rel="noopener noreferrer">
+                      {commit.message}
+                      <OpensInNewTab />
+                    </a>
+                    <span class="digest-tag">{commit.author}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))
+        )
+      }
+
+      <p class="digest-note">
+        This page rebuilds on every deploy and reads the live digest from the
+        activity worker. Set PUBLIC_DIGEST_API_URL to point at a different
+        endpoint.
+      </p>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .digest-main {
+    min-height: 100vh;
+    padding-top: 4rem;
+    padding-bottom: 3rem;
+  }
+
+  .digest-container {
+    max-width: 56rem;
+  }
+
+  .digest-back {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 2rem;
+  }
+
+  .digest-back:hover {
+    color: var(--brand-maroon);
+  }
+
+  .digest-hero h1 {
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    margin: 0 0 1rem;
+  }
+
+  .digest-lede {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+    max-width: 42rem;
+  }
+
+  .digest-generated {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0 0 2rem;
+  }
+
+  .digest-note {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .digest-repo {
+    margin-bottom: 2.5rem;
+  }
+
+  .digest-repo h2 {
+    font-size: 1.1rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .digest-repo h2 a {
+    color: var(--brand-maroon);
+    text-decoration: none;
+  }
+
+  .digest-repo h2 a:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .digest-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .digest-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-card);
+  }
+
+  .digest-list a {
+    color: var(--brand-maroon);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    min-width: 0;
+  }
+
+  .digest-tag {
+    color: var(--text-muted);
+    white-space: nowrap;
+    font-size: 0.8rem;
+  }
+</style>

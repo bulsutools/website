@@ -1,0 +1,19 @@
+name = "bulsu-activity-digest"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+account_id = "ee40d544c91d2b9f1bd9e0f7b2b304b8"
+
+# Daily at 02:00 UTC. The cron only posts to Discord; /api/digest computes
+# live on each request so the site never depends on stored state.
+[triggers]
+crons = ["0 2 * * *"]
+
+# Serve the digest JSON next to the Pages site. Workers routes win over the
+# Pages static asset for matching paths.
+[[routes]]
+pattern = "bulsu.tools/api/digest*"
+zone_name = "bulsu.tools"
+
+[[routes]]
+pattern = "www.bulsu.tools/api/digest*"
+zone_name = "bulsu.tools"
