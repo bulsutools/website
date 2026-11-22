@@ -71,7 +71,7 @@ export function formatGithubContributions(count: number): string {
   return count === 1 ? "1 commit" : `${count.toLocaleString()} commits`;
 }
 
-function githubHeaders(): HeadersInit {
+export function githubHeaders(): HeadersInit {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
     "User-Agent": "bulsu.tools",
@@ -90,7 +90,7 @@ async function githubGet<T>(url: string): Promise<T | null> {
   return (await res.json()) as T;
 }
 
-async function listOrgRepos(): Promise<string[]> {
+export async function listOrgRepos(): Promise<string[]> {
   const repos: GithubRepo[] = [];
   let page = 1;
 

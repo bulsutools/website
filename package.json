@@ -9,6 +9,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "generate:og": "python3 scripts/generate-og-image.py",
+    "check:ask": "node --experimental-strip-types scripts/check-ask-search.ts",
     "preview": "astro preview",
     "astro": "astro"
   },
