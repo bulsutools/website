@@ -31,6 +31,11 @@ npm run dev
 - Manual deploy: `CLOUDFLARE_ACCOUNT_ID=ee40d544c91d2b9f1bd9e0f7b2b304b8 wrangler pages deploy dist --project-name=bulsu-tools --branch=main`
 - Feature work: branch → PR to `main`
 
+## Workers
+
+- `workers/org-mcp` — MCP (Streamable HTTP) endpoint for the org directory: `list_tools`, `get_tool`, `list_people`, `search_org`. Public, read-only. See [workers/org-mcp/README.md](workers/org-mcp/README.md) for deploy and secrets.
+- `workers/messenger-redirect` — Messenger short-link redirects (see its README)
+
 ## Tools listed
 
 - [Geary](https://geary.bulsu.tools) — student handbook
