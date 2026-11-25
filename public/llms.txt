@@ -12,6 +12,7 @@
 
 - [About](https://bulsu.tools/about): what bulsutools is and how the tools are built
 - [People](https://bulsu.tools/people): top contributors across bulsutools GitHub repositories
+- [Ask](https://bulsu.tools/ask): Q&A answered only from bulsu.tools pages and public bulsutools repositories
 - [Privacy](https://bulsu.tools/privacy)
 - [Terms](https://bulsu.tools/terms)
 

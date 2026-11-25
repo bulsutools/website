@@ -22,6 +22,7 @@ npm run dev
 | `npm run build` | Production build to `./dist/` |
 | `npm run preview` | Preview the build |
 | `npm run generate:og` | Regenerate the Open Graph image |
+| `npm run check:ask` | Self-check for the `/ask` retrieval logic |
 
 ## Deploy
 

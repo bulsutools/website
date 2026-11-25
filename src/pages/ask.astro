@@ -1,0 +1,370 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Layout
+  title="Ask"
+  description="Ask bulsu.tools a question and get an answer drawn only from our tools, docs and open-source repositories."
+>
+  <Header />
+  <main id="main-content" class="ask-main">
+    <div class="container ask-container">
+      <a href="/" class="ask-back">&larr; Home</a>
+
+      <header class="ask-hero">
+        <h1>Ask bulsu.tools</h1>
+        <p class="ask-lede">
+          Answers come only from our site copy and the public
+          <a href="https://github.com/bulsutools">bulsutools</a> repositories.
+          If it is not in our docs, the answer says so.
+        </p>
+      </header>
+
+      <form class="ask-form" id="ask-form">
+        <label class="ask-label" for="ask-input">Your question</label>
+        <div class="ask-row">
+          <input
+            class="ask-input"
+            id="ask-input"
+            name="q"
+            type="search"
+            placeholder="What tools does bulsutools have?"
+            autocomplete="off"
+            required
+          />
+          <button class="btn btn-primary" type="submit">Ask</button>
+        </div>
+        <p class="ask-examples">
+          Try:
+          <button type="button" class="ask-example" data-q="What tools does bulsutools have?">What tools does bulsutools have?</button>
+          <button type="button" class="ask-example" data-q="How do I compute my GWA?">How do I compute my GWA?</button>
+          <button type="button" class="ask-example" data-q="Where is the BulSU Malolos campus map?">Where is the Malolos campus map?</button>
+        </p>
+      </form>
+
+      <section class="ask-results" id="ask-results" aria-live="polite">
+        <p class="ask-note">Answers cite their sources. Nothing is generated from outside our indexed content.</p>
+      </section>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  import { searchChunks, type AskChunk } from "../lib/ask-search";
+
+  const form = document.getElementById("ask-form") as HTMLFormElement;
+  const input = document.getElementById("ask-input") as HTMLInputElement;
+  const results = document.getElementById("ask-results") as HTMLElement;
+
+  const EXCERPT_LENGTH = 500;
+
+  let corpus: AskChunk[] | null = null;
+  let corpusFailed = false;
+
+  async function loadCorpus(): Promise<AskChunk[] | null> {
+    if (corpus) return corpus;
+    if (corpusFailed) return null;
+    try {
+      const res = await fetch("/ask-corpus.json");
+      if (!res.ok) throw new Error(String(res.status));
+      const data = (await res.json()) as { chunks?: AskChunk[] };
+      corpus = data.chunks ?? [];
+      return corpus;
+    } catch {
+      corpusFailed = true;
+      return null;
+    }
+  }
+
+  function el<K extends keyof HTMLElementTagNameMap>(
+    tag: K,
+    className?: string,
+    text?: string,
+  ): HTMLElementTagNameMap[K] {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function renderSources(chunks: AskChunk[]) {
+    const list = el("ul", "ask-sources");
+    for (const chunk of chunks) {
+      const item = el("li");
+      const link = el("a", "ask-source", chunk.title);
+      link.href = chunk.url;
+      if (!chunk.url.startsWith("/")) {
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+      }
+      item.append(link);
+      list.append(item);
+    }
+    return list;
+  }
+
+  function renderAnswer(chunks: AskChunk[], query: string) {
+    results.replaceChildren();
+    const best = chunks[0];
+
+    const answer = el("div", "ask-answer");
+    answer.append(el("h2", "ask-answer__title", best.chunk.title));
+    const excerpt =
+      best.chunk.text.length > EXCERPT_LENGTH
+        ? `${best.chunk.text.slice(0, EXCERPT_LENGTH).trimEnd()}…`
+        : best.chunk.text;
+    answer.append(el("p", "ask-answer__text", excerpt));
+    const more = el("a", "ask-more", "Read the full source");
+    more.href = best.chunk.url;
+    if (!best.chunk.url.startsWith("/")) {
+      more.target = "_blank";
+      more.rel = "noopener noreferrer";
+    }
+    answer.append(more);
+    results.append(answer);
+
+    if (chunks.length > 1) {
+      results.append(el("h3", "ask-related", "Also related"));
+      results.append(renderSources(chunks.slice(1)));
+    }
+    results.append(el("h3", "ask-related", "Sources"));
+    results.append(renderSources(chunks));
+  }
+
+  function renderNotFound(query: string) {
+    results.replaceChildren();
+    const box = el("div", "ask-notfound");
+    box.append(
+      el(
+        "p",
+        "ask-notfound__text",
+        `We could not find "${query}" in our docs. The corpus only covers bulsu.tools pages and public bulsutools repositories.`,
+      ),
+    );
+    const links = el("p", "ask-notfound__links");
+    const llms = el("a", "", "Browse the full text index (llms.txt)");
+    llms.href = "/llms.txt";
+    const repo = el("a", "", "Search the GitHub org directly");
+    repo.href = "https://github.com/search?q=org%3Abulsutools+" + encodeURIComponent(query);
+    repo.target = "_blank";
+    repo.rel = "noopener noreferrer";
+    links.append(llms, document.createTextNode(" · "), repo);
+    box.append(links);
+    results.append(box);
+  }
+
+  function renderCorpusUnavailable() {
+    results.replaceChildren();
+    const box = el("div", "ask-notfound");
+    box.append(
+      el(
+        "p",
+        "ask-notfound__text",
+        "The answer index did not load. You can still browse the full text index directly.",
+      ),
+    );
+    const links = el("p", "ask-notfound__links");
+    const llms = el("a", "", "llms.txt");
+    llms.href = "/llms.txt";
+    links.append(llms);
+    box.append(links);
+    results.append(box);
+  }
+
+  async function ask(query: string) {
+    const chunks = await loadCorpus();
+    if (!chunks) {
+      renderCorpusUnavailable();
+      return;
+    }
+    const matches = searchChunks(chunks, query);
+    if (matches.length === 0) {
+      renderNotFound(query);
+    } else {
+      renderAnswer(
+        matches.map((m) => m.chunk),
+        query,
+      );
+    }
+  }
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const query = input.value.trim();
+    if (query) void ask(query);
+  });
+
+  document.querySelectorAll<HTMLButtonElement>(".ask-example").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      input.value = btn.dataset.q ?? "";
+      void ask(input.value);
+    });
+  });
+</script>
+
+<style>
+  .ask-main {
+    min-height: 100vh;
+    padding-top: 4rem;
+    padding-bottom: 3rem;
+  }
+
+  .ask-container {
+    max-width: 44rem;
+  }
+
+  .ask-back {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 2rem;
+  }
+
+  .ask-back:hover {
+    color: var(--brand-maroon);
+  }
+
+  .ask-hero h1 {
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    margin: 0 0 1rem;
+  }
+
+  .ask-lede {
+    margin: 0 0 2rem;
+    font-size: 0.95rem;
+    max-width: 42rem;
+  }
+
+  .ask-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .ask-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .ask-input {
+    flex: 1;
+    min-width: 0;
+    min-height: 2.75rem;
+    padding: 0 0.875rem;
+    font-size: 0.95rem;
+    font-family: var(--font-sans);
+    color: var(--text-ink);
+    background: var(--bg-card);
+    border: 1px solid var(--border-input);
+    border-radius: var(--radius-md);
+  }
+
+  .ask-input:focus {
+    outline: 2px solid var(--brand-maroon);
+    outline-offset: 1px;
+    border-color: var(--brand-maroon);
+  }
+
+  .ask-examples {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .ask-example {
+    font: inherit;
+    color: var(--brand-maroon);
+    background: var(--brand-maroon-tint);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-pill);
+    padding: 0.2rem 0.7rem;
+    cursor: pointer;
+  }
+
+  .ask-example:hover {
+    background: var(--brand-maroon-tint-strong);
+  }
+
+  .ask-results {
+    margin-top: 2rem;
+  }
+
+  .ask-note {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+  }
+
+  .ask-answer {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .ask-answer__title {
+    font-size: 1.1rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .ask-answer__text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    margin-bottom: 0.75rem;
+  }
+
+  .ask-more {
+    font-size: 0.85rem;
+    color: var(--brand-maroon);
+    font-weight: 600;
+  }
+
+  .ask-related {
+    font-size: 1rem;
+    margin: 1.5rem 0 0.5rem;
+  }
+
+  .ask-sources {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .ask-source {
+    color: var(--brand-maroon);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-size: 0.9rem;
+  }
+
+  .ask-notfound {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+  }
+
+  .ask-notfound__text {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .ask-notfound__links a {
+    color: var(--brand-maroon);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-size: 0.9rem;
+  }
+</style>
