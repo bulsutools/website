@@ -12,6 +12,7 @@ This file covers the **org landing site** for [bulsutools](https://github.com/bu
 | Global styles | [src/styles/global.css](src/styles/global.css) |
 | Tool listings | [src/data/tools.ts](src/data/tools.ts) |
 | Site URLs / OG meta | [src/lib/site-meta.ts](src/lib/site-meta.ts) |
+| Cloudflare Workers (MCP endpoint, redirects, digest) | `workers/*/README.md` |
 | Activity digest worker | [workers/activity-digest/README.md](workers/activity-digest/README.md) |
 
 ## Stack
@@ -19,7 +20,8 @@ This file covers the **org landing site** for [bulsutools](https://github.com/bu
 - **Framework:** Astro (static org landing)
 - **Node:** ≥ 22.12
 - **Package manager:** npm (`package-lock.json`)
-- **Deploy:** Cloudflare Pages (`bulsu-tools` project)
+- **Deploy:** Cloudflare Pages (`bulsu-tools` project); Workers in `workers/` deploy separately via `wrangler deploy` (see each worker's README)
+- Workers share `src/data/tools.ts` and `src/lib/github-org-contributors.ts` by direct import; keep them dependency-free of Astro
 
 ## Branches and deploy
 
@@ -53,7 +55,7 @@ src/
  lib/ # site-meta, github-org-contributors
  styles/ # global.css
 public/ # logo, screenshots, OG image
-workers/ # Cloudflare Workers: messenger-redirect, activity-digest
+workers/ # org-mcp (MCP endpoint), messenger-redirect, activity-digest; not part of the Pages build
 ```
 
 ## Workers

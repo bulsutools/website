@@ -33,7 +33,8 @@ npm run dev
 
 ## Workers
 
-- `workers/messenger-redirect/` — legacy messenger redirect worker (uplbtools account)
+- `workers/org-mcp` — MCP (Streamable HTTP) endpoint for the org directory: `list_tools`, `get_tool`, `list_people`, `search_org`. Public, read-only. See [workers/org-mcp/README.md](workers/org-mcp/README.md) for deploy and secrets.
+- `workers/messenger-redirect` — Messenger short-link redirects (see its README)
 - `workers/activity-digest/` — serves `GET /api/digest` (last-24h org activity as JSON) and runs a daily cron that posts the digest to Discord. Powers the `/digest` page, which fetches the API at build time. See `workers/activity-digest/README.md` for secrets and deploy steps; `GITHUB_TOKEN` and `DISCORD_WEBHOOK_URL` are worker secrets, never committed.
 
 ## Tools listed
