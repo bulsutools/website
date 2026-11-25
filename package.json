@@ -11,6 +11,7 @@
     "generate:og": "python3 scripts/generate-og-image.py",
     "check:ask": "node --experimental-strip-types scripts/check-ask-search.ts",
     "preview": "astro preview",
+    "test": "node --test workers/activity-digest/test/digest.test.mjs",
     "astro": "astro"
   },
   "dependencies": {

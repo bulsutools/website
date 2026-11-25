@@ -12,7 +12,8 @@ This file covers the **org landing site** for [bulsutools](https://github.com/bu
 | Global styles | [src/styles/global.css](src/styles/global.css) |
 | Tool listings | [src/data/tools.ts](src/data/tools.ts) |
 | Site URLs / OG meta | [src/lib/site-meta.ts](src/lib/site-meta.ts) |
-| Cloudflare Workers (MCP endpoint, redirects) | `workers/*/README.md` |
+| Cloudflare Workers (MCP endpoint, redirects, digest) | `workers/*/README.md` |
+| Activity digest worker | [workers/activity-digest/README.md](workers/activity-digest/README.md) |
 
 ## Stack
 
@@ -33,6 +34,7 @@ This file covers the **org landing site** for [bulsutools](https://github.com/bu
 | Step | When |
 | --- | --- |
 | `npm run build` | Before commit/PR on substantive changes |
+| `npm test` | Worker digest logic (`workers/activity-digest`) |
 | `npm run dev` | UI/content changes: spot-check locally |
 | 320px / 768px | Layout changes: no overflow; text wraps or truncates |
 
@@ -48,13 +50,17 @@ This file covers the **org landing site** for [bulsutools](https://github.com/bu
 src/
  components/ # Hero, ToolsGrid, About, Community, Footer, …
  layouts/ # Layout.astro
- pages/ # index, about, people, privacy, terms
+ pages/ # index, about, people, digest, privacy, terms
  data/ # tools.ts
  lib/ # site-meta, github-org-contributors
  styles/ # global.css
 public/ # logo, screenshots, OG image
-workers/ # org-mcp (MCP endpoint), messenger-redirect; not part of the Pages build
+workers/ # org-mcp (MCP endpoint), messenger-redirect, activity-digest; not part of the Pages build
 ```
+
+## Workers
+
+- `workers/activity-digest/` — `GET /api/digest` JSON + daily cron Discord post; `/digest` page fetches the API at build. Secrets (`GITHUB_TOKEN`, optional `DISCORD_WEBHOOK_URL`) via `wrangler secret put`; deploy with `wrangler deploy` from `workers/activity-digest/`. Setup detail in its README.
 
 ## Commits
 
