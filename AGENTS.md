@@ -12,13 +12,15 @@ This file covers the **org landing site** for [bulsutools](https://github.com/bu
 | Global styles | [src/styles/global.css](src/styles/global.css) |
 | Tool listings | [src/data/tools.ts](src/data/tools.ts) |
 | Site URLs / OG meta | [src/lib/site-meta.ts](src/lib/site-meta.ts) |
+| Cloudflare Workers (MCP endpoint, redirects) | `workers/*/README.md` |
 
 ## Stack
 
 - **Framework:** Astro (static org landing)
 - **Node:** ≥ 22.12
 - **Package manager:** npm (`package-lock.json`)
-- **Deploy:** Cloudflare Pages (`bulsu-tools` project)
+- **Deploy:** Cloudflare Pages (`bulsu-tools` project); Workers in `workers/` deploy separately via `wrangler deploy` (see each worker's README)
+- Workers share `src/data/tools.ts` and `src/lib/github-org-contributors.ts` by direct import; keep them dependency-free of Astro
 
 ## Branches and deploy
 
@@ -51,6 +53,7 @@ src/
  lib/ # site-meta, github-org-contributors
  styles/ # global.css
 public/ # logo, screenshots, OG image
+workers/ # org-mcp (MCP endpoint), messenger-redirect; not part of the Pages build
 ```
 
 ## Commits

@@ -1,0 +1,4 @@
+name = "bulsu-tools-mcp"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+account_id = "ee40d544c91d2b9f1bd9e0f7b2b304b8"
